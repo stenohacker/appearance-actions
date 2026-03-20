@@ -4,7 +4,7 @@ info:
   version: 1.0.0
   description: Deterministic retrieval and verification for attorney appearance pages.
 servers:
-  - url: https://YOUR-ACTION-HOST.example.com
+  - url: https://appearance-actions-backend.onrender.com
 paths:
   /find:
     post:
