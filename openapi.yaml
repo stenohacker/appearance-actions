@@ -1,0 +1,153 @@
+openapi: 3.1.0
+info:
+  title: Appearance Research Actions
+  version: 1.0.0
+  description: Deterministic retrieval and verification for attorney appearance pages.
+servers:
+  - url: https://YOUR-ACTION-HOST.example.com
+paths:
+  /find:
+    post:
+      operationId: findAttorneys
+      summary: Retrieve provable attorney appearance-page data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FindRequest'
+      responses:
+        '200':
+          description: Successful find response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FindResponse'
+  /verify:
+    post:
+      operationId: verifyAttorneys
+      summary: Fresh-web audit of attorney bio and email evidence.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyRequest'
+      responses:
+        '200':
+          description: Successful verify response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyResponse'
+components:
+  schemas:
+    AttorneyInput:
+      type: object
+      required: [name, firm]
+      properties:
+        name:
+          type: string
+        firm:
+          type: string
+    ADTRow:
+      type: object
+      required: [name, firm, street_address, city_state_zip, phone, email, secondary_source_urls]
+      properties:
+        name:
+          type: string
+        firm:
+          type: string
+        street_address:
+          type: string
+        city_state_zip:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        secondary_source_urls:
+          type: array
+          items:
+            type: string
+        evidence_tier:
+          type: string
+          enum: [T1, T2, T3, T0]
+        retrieval_attempts:
+          type: integer
+    QCRow:
+      type: object
+      required: [name, firm, bio_url, bio_http, final_url, freshness_certification, verification_status, qc_notes]
+      properties:
+        name:
+          type: string
+        firm:
+          type: string
+        bio_url:
+          type: string
+        bio_http:
+          type: string
+        final_url:
+          type: string
+        freshness_certification:
+          type: string
+        verification_status:
+          type: string
+          enum: [PASS, FAIL]
+        qc_notes:
+          type: string
+        same_turn_web_hits:
+          type: integer
+        retrieval_attempts:
+          type: integer
+    FindRequest:
+      type: object
+      required: [attorneys]
+      properties:
+        attorneys:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttorneyInput'
+        max_attempts_per_attorney:
+          type: integer
+          default: 3
+        tier1_only_first:
+          type: boolean
+          default: true
+        blank_only_fill_phase:
+          type: boolean
+          default: true
+    FindResponse:
+      type: object
+      required: [rows, retrieved_at_utc]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ADTRow'
+        retrieved_at_utc:
+          type: string
+    VerifyRequest:
+      type: object
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/ADTRow'
+        max_attempts_per_attorney:
+          type: integer
+          default: 3
+        require_same_turn_web_hit:
+          type: boolean
+          default: true
+    VerifyResponse:
+      type: object
+      required: [rows, verified_at_utc]
+      properties:
+        rows:
+          type: array
+          items:
+            $ref: '#/components/schemas/QCRow'
+        verified_at_utc:
+          type: string
